@@ -10,6 +10,8 @@
 typedef struct dirStruct {
     float angle;
     float ampl;
+    float sat;
+    float hue;
 } direction;
 
 class Picture

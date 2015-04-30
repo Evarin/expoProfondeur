@@ -786,3 +786,70 @@
 	"../include/kiss_fftr.h"
 	"../include/Displayer.h"
 
+1429011398 source:d:\prog\expoprofondeur\expoprofondeur\main.cpp
+	<SFML/Graphics.hpp>
+	<cmath>
+	<cstdio>
+	<vector>
+	<string>
+	<stdlib.h>
+	<time.h>
+	"include/Picture.h"
+	"include/Displayer.h"
+
+1430431067 d:\prog\expoprofondeur\expoprofondeur\include\picture.h
+	<string>
+	"Displayer.h"
+
+1430432631 d:\prog\expoprofondeur\expoprofondeur\include\displayer.h
+	<vector>
+	<SFML/Graphics.hpp>
+	"Picture.h"
+
+1430433054 source:d:\prog\expoprofondeur\expoprofondeur\src\displayer.cpp
+	"../include/Displayer.h"
+	<dirent.h>
+	<stdlib.h>
+	<string.h>
+	<iostream>
+	<fstream>
+	<cmath>
+	"../include/Picture.h"
+
+1428974139 source:d:\prog\expoprofondeur\expoprofondeur\src\kiss_fft.c
+	"../include/_kiss_fft_guts.h"
+
+1428704117 d:\prog\expoprofondeur\expoprofondeur\include\_kiss_fft_guts.h
+	"kiss_fft.h"
+	<limits.h>
+	<alloca.h>
+
+1428704118 d:\prog\expoprofondeur\expoprofondeur\include\kiss_fft.h
+	<stdlib.h>
+	<stdio.h>
+	<math.h>
+	<string.h>
+	<xmmintrin.h>
+	<sys/types.h>
+
+1428974153 source:d:\prog\expoprofondeur\expoprofondeur\src\kiss_fftr.c
+	"../include/kiss_fftr.h"
+	"../include/_kiss_fft_guts.h"
+
+1428704119 d:\prog\expoprofondeur\expoprofondeur\include\kiss_fftr.h
+	"kiss_fft.h"
+
+1430433154 source:d:\prog\expoprofondeur\expoprofondeur\src\picture.cpp
+	"../include/Picture.h"
+	<SFML/Graphics.hpp>
+	<cmath>
+	<iostream>
+	<fstream>
+	<vector>
+	<string>
+	<stdlib.h>
+	<time.h>
+	<dirent.h>
+	"../include/kiss_fftr.h"
+	"../include/Displayer.h"
+

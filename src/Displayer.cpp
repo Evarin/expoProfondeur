@@ -41,6 +41,14 @@ vector<int> randInj (int mx, int nb) {
     return mem;
 }
 
+void HSV2RVB(int h, int s, int v, vector<sf::Uint8> &ret){
+    int t = (h/60) % 6;
+    int f = h % 60;
+    ret[(t/2 + 2)%3] = v * (100 - s) / 100;
+    ret[((t + 1)/2)%3] = v;
+    ret[(7-t)%3] = v * (6000 - (t&1 ? f : 60 - f) * s) / 6000;
+}
+
 Displayer::Displayer(sf::RenderWindow &window, const string &dir) :
     pictures(), screen(window)
 {
@@ -83,7 +91,7 @@ Displayer::Displayer(sf::RenderWindow &window, const string &dir) :
     photoSprite.setScale(1, 1);
 }
 
-void Displayer::showDirections (float amplpct, float anglepct) {
+void Displayer::showDirections (const float amplpct, const float anglepct, const float colpct) {
     const vector<direction> &odir = pictures[numTex]->directions;
     const vector<direction> &ddir = pictures[!numTex]->directions;
     int n = 0;
@@ -91,6 +99,8 @@ void Displayer::showDirections (float amplpct, float anglepct) {
     sf::Vector2f temp, du;
     const float amplnpct = (1.0f - amplpct);
     const float anglenpct = (1.0f - anglepct);
+    const float colnpct = (1.0f - colpct);
+    vector<sf::Uint8> colors(3);
     for(int i = 0; i < Displayer::screenCX; i++) {
         for(int j = 0; j < Displayer::screenCY; j++) {
             int tp = (i+j*screenCX);
@@ -99,10 +109,16 @@ void Displayer::showDirections (float amplpct, float anglepct) {
             if (ampl < 1.0f) continue;
             float angle = anglenpct * odir[tp].angle + anglepct * ddir[tp].angle;
 
+            int hue = colnpct * odir[tp].hue + colpct * ddir[tp].hue;
+            int sat = (colnpct * odir[tp].sat + colpct * ddir[tp].sat) * 1.0f;
+            HSV2RVB(hue, sat, 100, colors);
+            sf::Color color(colors[0], colors[1], colors[2]);
+
             temp = sf::Vector2f((i + 0.5f) * CARREAU, (j + 0.5f) * CARREAU);
             du = sf::Vector2f(- CARREAU * sinf(angle), CARREAU * cosf(angle)) * powf(ampl, 0.5) / 15.0f / 1.414f;
             vertices[n << 1].position = temp + du;
             vertices[(n << 1)|1].position = temp - du;
+            vertices[n << 1].color = vertices[(n << 1)|1].color = color;
             n++;
         }
     }
@@ -114,7 +130,7 @@ void Displayer::update() {
     float aprog = .5 - pow(cos(min(1.0f, progress * 1.5f) * M_PI), 1.0f) * .5;
     float bprog = .5 - pow(cos(max(0.0f, progress * 1.5f - 0.5f)*M_PI), 1.0f) * .5;
     if (frame < TFREE) progress = 1.0f;
-    if (pictures.size() == 2) showDirections(aprog, bprog);//, (frame-TFREE)/(TSHOW-TFREE));
+    if (pictures.size() == 2) showDirections(aprog, bprog, progress);//, (frame-TFREE)/(TSHOW-TFREE));
 
     // Affichage de la photo
     if (frame >= TSHOW) {

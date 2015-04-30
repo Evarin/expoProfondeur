@@ -13,12 +13,16 @@
 #include "../include/kiss_fftr.h"
 #include "../include/Displayer.h"
 
-#define computeGradient(NO,N,NE, O,C,E, SO,S,SE) (NO - NE + 2*(O - E) + SO - SE)
+#define gethue(r, g, b, mx, mn) (mx == mn ? 0 : (mx == r ? (60*(g-b)/(mx-mn) + 360)%360 : (mx==g ? (60*(b-r)/(mx-mn) + 120) : (60*(r-g)/(mx-mn) + 240) ) ) )
+#define getsat(mx, mn) (mx == 0 ? 0 : 100 - (100*mn)/mx)
+#define getval(mx) mx
+
+#define computeGradient(NO, N, NE,  O, C, E,  SO, S, SE) (NO - NE + 2*(O - E) + SO - SE)
 
 using namespace std;
 
 typedef struct aPixel {
-    float dx,dy,d;
+    float dx, dy, d, h, s;
 } pixel;
 
 bool fexists(const std::string& filename) {
@@ -36,6 +40,8 @@ void loadDirections(const string &file, vector<direction> &directions){
     while(fichier >> val && i < directions.size()){
         directions[i].angle = val;
         fichier >> directions[i].ampl;
+        fichier >> directions[i].hue;
+        fichier >> directions[i].sat;
         i++;
     }
     fichier.close();
@@ -46,7 +52,7 @@ void saveDirections(const string &file, const vector<direction> &directions){
     for(vector<direction>::const_iterator direction = directions.begin();
           direction != directions.end() ;
           direction ++) {
-        fichier << direction->angle << " " << direction->ampl << " ";
+        fichier << direction->angle << " " << direction->ampl << " " << direction->hue << " " << direction->sat;
     }
     fichier.close();
 }
@@ -65,9 +71,14 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
         for(j=0;j<hgt;j++){
             int tpos = (i+j*wdt)*4;
             int tp = i+j*wdt;
-            newdata[tp] = (sf::Uint8)((imgdata[tpos]+imgdata[tpos+1]+imgdata[tpos+2])/3);
-//            tempdata[tp].x=i;
-//            tempdata[tp].y=j;
+            int r = imgdata[tpos];
+            int g = imgdata[tpos+1];
+            int b = imgdata[tpos+2];
+            int mx = max(r, max(g, b));
+            int mn = min(r, min(g, b));
+            newdata[tp] = (sf::Uint8)((r + g + b)/3);
+            tempdata[tp].h = gethue(r, g, b, mx, mn);
+            tempdata[tp].s = getsat(mx, mn);
         }
     }
     int szl = wdt;
@@ -159,6 +170,12 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
 
     dirmap.resize(swdt * shgt);
 
+    // Histogramme des directions
+    kiss_fft_scalar *directions = (kiss_fft_scalar *) malloc(ANGLERES * sizeof(kiss_fft_scalar));
+    kiss_fft_scalar *hues = (kiss_fft_scalar *) malloc(ANGLERES * sizeof(kiss_fft_scalar));
+
+    // Préparation des convolutions
+
     vector<float> gaussienne(ANGLERES/2+1);
     float sigmas = 0.10f;
     float gausscst = 1/sqrt(2*M_PI*sigmas);
@@ -166,43 +183,46 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
         gaussienne[k] = gausscst * expf(-(k*k)/sigmas);
     }
 
-    kiss_fftr_cfg cfgf = kiss_fftr_alloc(ANGLERES,0,NULL,NULL);
-    kiss_fftr_cfg cfgi = kiss_fftr_alloc(ANGLERES,1,NULL,NULL);
-    kiss_fft_scalar *directions = (kiss_fft_scalar *) malloc(ANGLERES * sizeof(kiss_fft_scalar));
+    kiss_fftr_cfg cfgf = kiss_fftr_alloc(ANGLERES, 0, NULL, NULL);
+    kiss_fftr_cfg cfgi = kiss_fftr_alloc(ANGLERES, 1, NULL, NULL);
     kiss_fft_cpx *fout = (kiss_fft_cpx *) malloc((ANGLERES/2+1) * sizeof(kiss_fft_cpx));
-
-    for(i = 0; i < ANGLERES; i++) directions[i] = 0.0f;
 
     int t = 0;
 
-    for(i=0;i<swdt;i++){
-        for(j=0;j<shgt;j++){
-            int tp = (i+j*swdt);
-            int tp2 = (i + j * wdt) * CARREAU;
+    for(int k = 0; k < ANGLERES; k++) directions[k] = hues[k] = 0.0f;
 
-            for(int di = 0; di<CARREAU; di++) {
-                for(int dj = 0; dj<CARREAU; dj++) {
+    for(i = 0; i < swdt; i++){
+        for(j = 0; j < shgt; j++){
+            int tp = (i + j * swdt);
+            int tp2 = (i + j * wdt) * CARREAU;
+            float sat = 0.0f;
+            float sattot = 0.0f;
+
+            for(int di = 0; di < CARREAU; di++) {
+                for(int dj = 0; dj < CARREAU; dj++) {
                     int ttp = tp2 + di + dj*wdt;
                     pixel *px = tempdata + ttp;
-                    int angle = ((int)round((atan2(px->dy, px->dx)/M_PI)*ANGLERES)+ANGLERES*2)%ANGLERES;
+
+                    int angle = ((int)round((atan2(px->dy, px->dx) / M_PI) * ANGLERES ) + ANGLERES * 2) % ANGLERES;
                     directions[angle] += px->d;
+
+                    int hue = (int)round(px->h / 360.0f * ANGLERES);
+                    hues[hue] += 1.0f;
+
+                    sat += px->s;
+                    sattot += 1.0f;
                 }
             }
 
+            // Directions
             kiss_fftr(cfgf, directions, fout);
 
             for(int k=0; k<=ANGLERES/2; k++) {
-                if(t==0) std::cout << ((int)(directions[k]*100.0f)/100.0f) << " ";
                 fout[k].r *= gaussienne[k];
                 fout[k].i *= gaussienne[k];
             }
 
             kiss_fftri(cfgi, fout, directions);
-
-            if(t==0) std::cout << "\n";
-            for(int k=0; k<ANGLERES; k++)
-                if(t==0) std::cout << ((int)(directions[k]/1.28f)/100.0f) << " ";
-            t++;
 
             int mdir = 0;
             float mamp = 0.0f;
@@ -215,6 +235,28 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
             }
             dirmap[tp].angle = (float) mdir * M_PI / ANGLERES;
             dirmap[tp].ampl = mamp / 128.0f;
+
+            // Hue
+            kiss_fftr(cfgf, hues, fout);
+
+            for(int k=0; k<=ANGLERES/2; k++) {
+                fout[k].r *= gaussienne[k];
+                fout[k].i *= gaussienne[k];
+            }
+
+            kiss_fftri(cfgi, fout, hues);
+
+            int mhue = 0;
+            mamp = 0.0f;
+            for(int k = 0; k < ANGLERES; k++){
+                if(hues[k] > mamp){
+                    mhue = k;
+                    mamp = hues[k];
+                }
+                hues[k] = 0.0f;
+            }
+            dirmap[tp].hue = (float) mhue * 360.0f / ANGLERES;
+            dirmap[tp].sat = sat / sattot;
         }
     }
     free(cfgf);

@@ -30,7 +30,7 @@ class Displayer
         vector<int> imgOrder;
         vector<Picture *> pictures;
         sf::VertexArray vertices;
-        void showDirections (float amplpct, float anglepct);
+        void showDirections (const float amplpct, const float anglepct, const float colpct);
 };
 
 #endif // DISPLAYER_H
