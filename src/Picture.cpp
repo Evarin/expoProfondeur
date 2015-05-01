@@ -52,7 +52,7 @@ void saveDirections(const string &file, const vector<direction> &directions){
     for(vector<direction>::const_iterator direction = directions.begin();
           direction != directions.end() ;
           direction ++) {
-        fichier << direction->angle << " " << direction->ampl << " " << direction->hue << " " << direction->sat;
+        fichier << direction->angle << " " << direction->ampl << " " << direction->hue << " " << direction->sat << " ";
     }
     fichier.close();
 }

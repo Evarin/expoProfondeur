@@ -168,6 +168,7 @@ void Displayer::update() {
             delete pictures[numTex];
             pictures[numTex] = new Picture(files[imgOrder[numImage]]);
         }
+        cout << files[imgOrder[numImage]];
         frame = 0;
     }
 }
