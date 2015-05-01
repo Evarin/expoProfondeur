@@ -272,6 +272,7 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
 Picture::Picture(const string &fichier) :
     directions(directs) {
     sf::Texture tphoto;
+    cout << fichier;
     if(! tphoto.loadFromFile(fichier + ".jpg"))
         return;
     sf::Vector2u tps = tphoto.getSize();
@@ -305,6 +306,27 @@ Picture::Picture(const string &fichier) :
         loadDirections(datafile, directs);
     }
     free(truc);
+}
+
+void Picture::prepareTransitionTo(const Picture &destination) {
+    vector<direction>::const_iterator ddir;
+    vector<direction>::iterator odir;
+    for(odir = directs.begin(), ddir = destination.directions.begin();
+        odir != directs.end();
+        odir++, ddir++) {
+        if(abs(odir->angle - ddir->angle) > M_PI / 2) {
+            if(odir->angle > ddir->angle)
+                odir->angle -= M_PI;
+            else
+                odir->angle += M_PI;
+        }
+        /*if(abs(odir->hue - ddir->hue) > 180.0f) {
+            if(odir->hue > ddir->hue)
+                odir->hue -= 360.0f;
+            else
+                odir->hue += 360.0f;
+        }*/
+    }
 }
 
 const sf::Texture &Picture::getTexture () {

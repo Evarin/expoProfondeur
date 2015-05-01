@@ -111,7 +111,7 @@ void Displayer::showDirections (const float amplpct, const float anglepct, const
 
             int hue = colnpct * odir[tp].hue + colpct * ddir[tp].hue;
             int sat = (colnpct * odir[tp].sat + colpct * ddir[tp].sat) * 1.0f;
-            HSV2RVB(hue, sat, 100, colors);
+            HSV2RVB(hue, (sqrt(sat)*10.0f), 200, colors);
             sf::Color color(colors[0], colors[1], colors[2]);
 
             temp = sf::Vector2f((i + 0.5f) * CARREAU, (j + 0.5f) * CARREAU);
@@ -168,7 +168,7 @@ void Displayer::update() {
             delete pictures[numTex];
             pictures[numTex] = new Picture(files[imgOrder[numImage]]);
         }
-        cout << files[imgOrder[numImage]];
+        pictures[!numTex]->prepareTransitionTo(*(pictures[numTex]));
         frame = 0;
     }
 }
