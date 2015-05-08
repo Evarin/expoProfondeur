@@ -31,6 +31,7 @@ class Displayer
         vector<Picture *> pictures;
         sf::VertexArray vertices;
         void showDirections (const float amplpct, const float anglepct, const float colpct);
+        void showDirectionsDest ();
 };
 
 #endif // DISPLAYER_H

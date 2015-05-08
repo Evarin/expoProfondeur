@@ -786,7 +786,7 @@
 	"../include/kiss_fftr.h"
 	"../include/Displayer.h"
 
-1429011398 source:d:\prog\expoprofondeur\expoprofondeur\main.cpp
+1431122744 source:d:\prog\expoprofondeur\expoprofondeur\main.cpp
 	<SFML/Graphics.hpp>
 	<cmath>
 	<cstdio>
@@ -797,24 +797,26 @@
 	"include/Picture.h"
 	"include/Displayer.h"
 
-1430504991 d:\prog\expoprofondeur\expoprofondeur\include\picture.h
+1431120493 d:\prog\expoprofondeur\expoprofondeur\include\picture.h
 	<string>
 	"Displayer.h"
 
-1430432631 d:\prog\expoprofondeur\expoprofondeur\include\displayer.h
+1431120650 d:\prog\expoprofondeur\expoprofondeur\include\displayer.h
 	<vector>
 	<SFML/Graphics.hpp>
 	"Picture.h"
 
-1430506544 source:d:\prog\expoprofondeur\expoprofondeur\src\displayer.cpp
+1431123682 source:d:\prog\expoprofondeur\expoprofondeur\src\displayer.cpp
 	"../include/Displayer.h"
 	<dirent.h>
 	<stdlib.h>
 	<string.h>
 	<iostream>
+	<sstream>
 	<fstream>
 	<cmath>
 	"../include/Picture.h"
+	"../include/logging.h"
 
 1428974139 source:d:\prog\expoprofondeur\expoprofondeur\src\kiss_fft.c
 	"../include/_kiss_fft_guts.h"
@@ -839,7 +841,7 @@
 1428704119 d:\prog\expoprofondeur\expoprofondeur\include\kiss_fftr.h
 	"kiss_fft.h"
 
-1430506922 source:d:\prog\expoprofondeur\expoprofondeur\src\picture.cpp
+1431124913 source:d:\prog\expoprofondeur\expoprofondeur\src\picture.cpp
 	"../include/Picture.h"
 	<SFML/Graphics.hpp>
 	<cmath>
@@ -852,4 +854,9 @@
 	<dirent.h>
 	"../include/kiss_fftr.h"
 	"../include/Displayer.h"
+	"../include/logging.h"
+
+1431123048 d:\prog\expoprofondeur\expoprofondeur\include\logging.h
+	<iostream>
+	<fstream>
 

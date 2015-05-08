@@ -23,6 +23,7 @@ class Picture
         const std::vector<direction> &directions;
         const sf::Texture &getTexture();
         void prepareTransitionTo(const Picture &destination);
+        bool available;
     protected:
     private:
         sf::RenderTexture ophoto;

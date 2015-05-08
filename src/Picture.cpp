@@ -12,6 +12,7 @@
 
 #include "../include/kiss_fftr.h"
 #include "../include/Displayer.h"
+#include "../include/logging.h"
 
 #define gethue(r, g, b, mx, mn) (mx == mn ? 0 : (mx == r ? (60*(g-b)/(mx-mn) + 360)%360 : (mx==g ? (60*(b-r)/(mx-mn) + 120) : (60*(r-g)/(mx-mn) + 240) ) ) )
 #define getsat(mx, mn) (mx == 0 ? 0 : 100 - (100*mn)/mx)
@@ -66,6 +67,7 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
     pixel *tempdata = (pixel *) malloc(sizeof(pixel)*wdt*hgt);
     int i,j;
 
+    cout << "Init\n";
     // Initialisation
     for(i=0;i<wdt;i++){
         for(j=0;j<hgt;j++){
@@ -86,6 +88,7 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
     // Calcul des gradients //
 
 
+    cout << "Gradients centre";
     // Centre
     for(i=1;i<wdt-1;i++){
         for(j=1;j<hgt-1;j++){
@@ -103,6 +106,8 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
             tempdata[tp].d = d;
         }
     }
+
+    cout << " bords \n";
     // Colonne de bord N
     for(j=1;j<hgt-1;j++){
         i=0;
@@ -168,6 +173,7 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
     int swdt = sz.x/CARREAU;
     int shgt = sz.y/CARREAU;
 
+    cout << "Directions ";
     dirmap.resize(swdt * shgt);
 
     // Histogramme des directions
@@ -179,7 +185,7 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
     vector<float> gaussienne(ANGLERES/2+1);
     float sigmas = 0.10f;
     float gausscst = 1/sqrt(2*M_PI*sigmas);
-    for(int k=0; k<=ANGLERES/2; k++) {
+    for(int k=0; k <= ANGLERES/2; k++) {
         gaussienne[k] = gausscst * expf(-(k*k)/sigmas);
     }
 
@@ -191,6 +197,7 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
 
     for(int k = 0; k < ANGLERES; k++) directions[k] = hues[k] = 0.0f;
 
+    cout << "calculs ";
     for(i = 0; i < swdt; i++){
         for(j = 0; j < shgt; j++){
             int tp = (i + j * swdt);
@@ -259,22 +266,30 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
             dirmap[tp].sat = sat / sattot;
         }
     }
-    free(cfgf);
-    free(cfgi);
 
+    cout << "liberation cfg cfgi ";
+    kiss_fft_cleanup();
+
+    cout << "directions fout ";
     free(fout);
     free(directions);
 
+    cout << "tempdata\n";
     free(tempdata);
+
+    cout << "Fini\n";
 }
 
 
 Picture::Picture(const string &fichier) :
-    directions(directs) {
+    directions(directs), available(true) {
     sf::Texture tphoto;
     cout << fichier;
-    if(! tphoto.loadFromFile(fichier + ".jpg"))
+    if(! tphoto.loadFromFile(fichier + ".jpg")) {
+        available = false;
+        logError("Error loading file "+fichier);
         return;
+    }
     sf::Vector2u tps = tphoto.getSize();
     tphoto.setSmooth(true);
 
@@ -290,6 +305,9 @@ Picture::Picture(const string &fichier) :
     photoSprite.setScale(pscale, -pscale);
     photoSprite.setPosition(ptx, Displayer::screenY - pty);
 
+    sf::RectangleShape blk(sf::Vector2f(Displayer::screenX, Displayer::screenY));
+    blk.setFillColor(sf::Color::Black);
+    ophoto.draw(blk);
     ophoto.draw(photoSprite);
 
     directs.resize(Displayer::screenCX * Displayer::screenCY);
@@ -297,11 +315,14 @@ Picture::Picture(const string &fichier) :
     char *truc = (char *)malloc(100 * sizeof(char));
     sprintf(truc, "%s_%dx%d.data", fichier.c_str(), Displayer::screenCX, Displayer::screenCY);
     string datafile(truc);
-    if (! fexists(datafile)) {
+    if (!fexists(datafile)) {
         sf::Image img = getTexture().copyToImage();
+        logInfo("Computing directions for file "+fichier);
         //img.flipVertically();
         computeDirections(img, directs);
+        logInfo("Saving it to "+datafile);
         saveDirections(datafile, directs);
+        logInfo("Done");
     } else {
         loadDirections(datafile, directs);
     }

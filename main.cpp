@@ -22,7 +22,8 @@ int main()
     sf::ContextSettings settings;
     settings.antialiasingLevel = 8;
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-    sf::RenderWindow window(desktop, "Profondeur", sf::Style::Default, settings);
+    sf::RenderWindow window(desktop, "Profondeur", sf::Style::Fullscreen, settings);
+    window.setMouseCursorVisible(false);
 
     sf::Time towait;
     sf::Clock clock;
