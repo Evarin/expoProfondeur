@@ -3,6 +3,8 @@
 
 #include <string>
 #include "Displayer.h"
+#include "kiss_fft.h"
+#include "kiss_fftr.h"
 
 #define CARREAU 12
 #define ANGLERES 128
@@ -17,13 +19,16 @@ typedef struct dirStruct {
 class Picture
 {
     public:
-        Picture(const std::string &fichier);
+        Picture(const std::string &fichier, bool compute = false);
         virtual ~Picture();
 
         const std::vector<direction> &directions;
         const sf::Texture &getTexture();
         void prepareTransitionTo(const Picture &destination);
         bool available;
+
+        static std::string toLaunch;
+
     protected:
     private:
         sf::RenderTexture ophoto;

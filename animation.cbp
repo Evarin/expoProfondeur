@@ -24,8 +24,9 @@
 			<Target title="Release">
 				<Option output="bin/Release/expoProfondeur" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
-				<Option type="0" />
+				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-DSFML_STATIC" />
@@ -51,6 +52,7 @@
 		<Unit filename="include/_kiss_fft_guts.h" />
 		<Unit filename="include/kiss_fft.h" />
 		<Unit filename="include/kiss_fftr.h" />
+		<Unit filename="include/logging.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/Displayer.cpp" />
 		<Unit filename="src/Picture.cpp" />

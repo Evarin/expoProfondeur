@@ -60,11 +60,6 @@ Displayer::Displayer(sf::RenderWindow &window, const string &dir) :
     numImage = 0;
     numTex = 0;
 
-    Displayer::screenX = window.getSize().x;
-    Displayer::screenY = window.getSize().y;
-    Displayer::screenCX = window.getSize().x / CARREAU;
-    Displayer::screenCY = window.getSize().y / CARREAU;
-
     vertices.resize(screenCX * screenCY * 2);
     for(int i = 0; i < screenCX * screenCY * 2; i++) vertices[i].color = sf::Color::White;;
 
@@ -207,6 +202,7 @@ void Displayer::update() {
             pictures[numTex] = new Picture(files[imgOrder[numImage]]);
         }
         while (!pictures[numTex]->available) {
+            logError("Problem with " +files[imgOrder[numImage]]);
             numImage++;
             numImage %= files.size();
             delete pictures[numTex];

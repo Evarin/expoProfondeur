@@ -31,7 +31,6 @@ bool fexists(const std::string& filename) {
   return ifile;
 }
 
-
 // Chargemement des coordonnées des lignes
 void loadDirections(const string &file, vector<direction> &directions){
     ifstream fichier(file.c_str(), ios::in);
@@ -267,6 +266,7 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
         }
     }
 
+    try {
     cout << "liberation cfg cfgi ";
     kiss_fft_cleanup();
 
@@ -278,11 +278,57 @@ void computeDirections (const sf::Image &img, vector<direction> &dirmap){
     free(tempdata);
 
     cout << "Fini\n";
+    } catch(const exception &e) {
+        logError(e.what());
+    } catch(...) {
+        logError("Erreur inconnue");
+    }
 }
 
 
-Picture::Picture(const string &fichier) :
+Picture::Picture(const string &fichier, bool compute) :
     directions(directs), available(true) {
+
+    char *truc = (char *)malloc(100 * sizeof(char));
+    sprintf(truc, "%s_%dx%d.data", fichier.c_str(), Displayer::screenCX, Displayer::screenCY);
+    string datafile(truc);
+    string tl = Picture::toLaunch;
+/*    if (!fexists(datafile) && !compute) {
+//        cout << Picture::toLaunch;
+        logInfo("Forking "+Picture::toLaunch+" "+fichier);
+
+        pid_t ppid = vfork();
+        int status;
+
+        if(ppid == 0) {
+            execl(tl.c_str(), tl.c_str(), fichier.c_str(), (char *) 0);
+        } else if(ppid = -1) {
+            logError("Error forking process");
+            available = false;
+            return;
+        } else {
+            waitpid(ppid, &status, 0);
+        }
+
+        string cmd = "\""+Picture::toLaunch+"\" \""+fichier+"\"";
+        STARTUPINFO info={sizeof(info)};
+        PROCESS_INFORMATION processInfo;
+        if (CreateProcess(NULL, cmd.c_str(), NULL, NULL, TRUE, 0, NULL, NULL, &info, &processInfo))
+        {
+            ::WaitForSingleObject(processInfo.hProcess, INFINITE);
+            CloseHandle(processInfo.hProcess);
+            CloseHandle(processInfo.hThread);
+        }
+
+        sprintf(truc, "Computed with exit : %d", status);
+        logInfo(truc);
+        if(res != 0 && !fexists(datafile)) {
+            available = false;
+            return;
+        }
+    }
+    */
+
     sf::Texture tphoto;
     cout << fichier;
     if(! tphoto.loadFromFile(fichier + ".jpg")) {
@@ -312,14 +358,15 @@ Picture::Picture(const string &fichier) :
 
     directs.resize(Displayer::screenCX * Displayer::screenCY);
 
-    char *truc = (char *)malloc(100 * sizeof(char));
-    sprintf(truc, "%s_%dx%d.data", fichier.c_str(), Displayer::screenCX, Displayer::screenCY);
-    string datafile(truc);
     if (!fexists(datafile)) {
         sf::Image img = getTexture().copyToImage();
-        logInfo("Computing directions for file "+fichier);
-        //img.flipVertically();
-        computeDirections(img, directs);
+        try {
+            logInfo("Computing directions for file "+fichier);
+            //img.flipVertically();
+            computeDirections(img, directs);
+        } catch(...) {
+            logError("Erreur inconnue au retour");
+        }
         logInfo("Saving it to "+datafile);
         saveDirections(datafile, directs);
         logInfo("Done");
@@ -358,3 +405,5 @@ Picture::~Picture()
 {
     //dtor
 }
+
+string Picture::toLaunch = "";
